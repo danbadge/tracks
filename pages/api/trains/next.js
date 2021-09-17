@@ -1,10 +1,12 @@
 import axios from 'axios'
+import { utcToZonedTime } from 'date-fns-tz'
 
 const makeTflRequest = async (routes) => {
     const appId = process.env.TFL_APP_ID;
     const appKey = process.env.TFL_APP_KEY;
-    const now = Date.now()
-    console.log(now)
+    // TFL API always returns dates in UK timezone
+    const now = utcToZonedTime(Date.now(), 'Europe/London')
+    console.log(now.toLocaleString())
 
     return Promise.all(routes.map(async (route) => {
         const tflUrl = 'https://api.tfl.gov.uk';
