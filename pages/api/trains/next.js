@@ -3,13 +3,16 @@ import axios from 'axios'
 const makeTflRequest = async (routes) => {
     const appId = process.env.TFL_APP_ID;
     const appKey = process.env.TFL_APP_KEY;
+    const now = Date.now()
+    console.log(now)
 
     return Promise.all(routes.map(async (route) => {
         const tflUrl = 'https://api.tfl.gov.uk';
         const reqUrl = `${tflUrl}/journey/journeyresults/${route.from.stopId}/to/${route.to.stopId}?app_id=${appId}&app_key=${appKey}`
         const response = await axios.get(reqUrl)
+        
         const routeTimetable = response.data.journeys.filter(tflRoute => {
-            return Date.parse(tflRoute.startDateTime) >= Date.now()
+            return Date.parse(tflRoute.startDateTime) >= now
         })
         return routeTimetable.map(tflRoute => {
             return {
@@ -19,7 +22,8 @@ const makeTflRequest = async (routes) => {
                 arrivalTime: tflRoute.arrivalDateTime,
                 to: route.to.name,
                 changes: tflRoute.legs.length - 1,
-                duration: tflRoute.duration
+                duration: tflRoute.duration,
+                leavingInUpper: Math.ceil((Date.parse(tflRoute.startDateTime) - now) / 60000)
             }
         })
     }))
