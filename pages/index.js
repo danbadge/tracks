@@ -1,10 +1,12 @@
 import Head from 'next/head'
 import Layout, { siteTitle } from '../components/layout'
 import utilStyles from '../styles/utils.module.css'
-import { getRoutesResult } from '../lib/main'
 import Route from '../components/route'
+import { useAppState } from '../context/state'
 
-export default function Home({ routes }) {
+export default function Home({}) {
+  const state = useAppState();
+
   return (
     <Layout home>
       <Head>
@@ -12,7 +14,7 @@ export default function Home({ routes }) {
       </Head>
       <section className={`${utilStyles.headingMd} ${utilStyles.padding1px}`}>
         <ul className={utilStyles.list}>
-          {routes.map((route) => (
+          {state.routes.map((route) => (
             <li className={utilStyles.listItem} key={route.id}>
               <Route route={route} />
             </li>
@@ -21,13 +23,4 @@ export default function Home({ routes }) {
       </section>
     </Layout>
   )
-}
-
-export async function getServerSideProps() {
-  const result = await getRoutesResult()
-  return {
-    props: {
-      routes: result.routes,
-    }
-  }
 }

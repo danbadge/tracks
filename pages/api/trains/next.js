@@ -1,12 +1,12 @@
 import axios from 'axios'
 import { utcToZonedTime } from 'date-fns-tz'
+import { v4 as uuidv4 } from 'uuid';
 
 const makeTflRequest = async (routes) => {
     const appId = process.env.TFL_APP_ID;
     const appKey = process.env.TFL_APP_KEY;
     // TFL API always returns dates in UK timezone
     const now = utcToZonedTime(Date.now(), 'Europe/London')
-    console.log(now.toLocaleString())
 
     return Promise.all(routes.map(async (route) => {
         const tflUrl = 'https://api.tfl.gov.uk';
@@ -18,7 +18,7 @@ const makeTflRequest = async (routes) => {
         })
         return routeTimetable.map(tflRoute => {
             return {
-                id: route.id,
+                id: uuidv4(),
                 departureTime: tflRoute.startDateTime,
                 from: route.from.name,
                 arrivalTime: tflRoute.arrivalDateTime,
@@ -34,7 +34,6 @@ const makeTflRequest = async (routes) => {
 export default async (req, res) => {
     const routes = [
         {
-            id: "1",
             from: {
                 stopId: '910GKENTHOS',
                 name: 'Kent House'
@@ -45,7 +44,6 @@ export default async (req, res) => {
             }
         },
         {
-            id: "2",
             from: {
                 stopId: '910GBIRKBCK',
                 name: 'Birkbeck'
@@ -56,7 +54,6 @@ export default async (req, res) => {
             }
         },
         {
-            id: "3",
             from: {
                 stopId: '910GNORWDJ',
                 name: 'Norwood Junction'
@@ -67,7 +64,6 @@ export default async (req, res) => {
             }
         },
         {
-            id: "4",
             from: {
                 stopId: '910GELMERSE',
                 name: 'Elmers End'
@@ -78,7 +74,6 @@ export default async (req, res) => {
             }
         },
         {
-            id: "5",
             from: {
                 stopId: '910GANERLEY',
                 name: 'Anerley'
@@ -89,7 +84,6 @@ export default async (req, res) => {
             }
         },
         {
-            id: "6",
             from: {
                 stopId: '910GCRYSTLP',
                 name: 'Crystal Palace'
