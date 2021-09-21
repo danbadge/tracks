@@ -73,3 +73,11 @@
 .grey {
   color: #666;
 }
+
+.toggle {
+  display: flex;
+}
+
+.toggle label {
+  margin-left: auto;;
+}

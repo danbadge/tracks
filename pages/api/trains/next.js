@@ -2,15 +2,23 @@ import axios from 'axios'
 import { utcToZonedTime } from 'date-fns-tz'
 import { v4 as uuidv4 } from 'uuid';
 
-const makeTflRequest = async (routes) => {
+const makeTflRequest = async (routes, reverse) => {
     const appId = process.env.TFL_APP_ID;
     const appKey = process.env.TFL_APP_KEY;
     // TFL API always returns dates in UK timezone
     const now = utcToZonedTime(Date.now(), 'Europe/London')
 
     return Promise.all(routes.map(async (route) => {
+        let departure = route.from;
+        let destination = route.to;
+
+        if (reverse) {
+            departure = route.to;
+            destination = route.from;
+        }
+
         const tflUrl = 'https://api.tfl.gov.uk';
-        const reqUrl = `${tflUrl}/journey/journeyresults/${route.from.stopId}/to/${route.to.stopId}?app_id=${appId}&app_key=${appKey}`
+        const reqUrl = `${tflUrl}/journey/journeyresults/${departure.stopId}/to/${destination.stopId}?app_id=${appId}&app_key=${appKey}`
         const response = await axios.get(reqUrl)
         
         const routeTimetable = response.data.journeys.filter(tflRoute => {
@@ -20,9 +28,9 @@ const makeTflRequest = async (routes) => {
             return {
                 id: uuidv4(),
                 departureTime: tflRoute.startDateTime,
-                from: route.from.name,
+                from: departure.name,
                 arrivalTime: tflRoute.arrivalDateTime,
-                to: route.to.name,
+                to: destination.name,
                 changes: tflRoute.legs.length - 1,
                 duration: tflRoute.duration,
                 leavingInUpper: Math.ceil((Date.parse(tflRoute.startDateTime) - now) / 60000)
@@ -95,7 +103,9 @@ export default async (req, res) => {
         }
     ]
 
-    const allRoutesTimetable = await makeTflRequest(routes)
+    const { reverse } = req.query
+
+    const allRoutesTimetable = await makeTflRequest(routes, reverse === "true")
     
     const sortedRoutes = allRoutesTimetable.flat()
         .sort((a,b) => Date.parse(a.arrivalTime) - Date.parse(b.arrivalTime))
